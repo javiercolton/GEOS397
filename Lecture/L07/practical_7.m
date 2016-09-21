@@ -23,9 +23,9 @@ methods(c)
 %%
 c = {10,'1'};
 %%
-b = c(1); % you access a cell with ()
+b = c(1) % you access a cell with ()
 %%
-a = c{1}; % you access the contents of a cell directly with {}
+a = c{1} % you access the contents of a cell directly with {}
 %%
 
 % TODO uncomment this line to show students the cell2mat() function
@@ -63,7 +63,7 @@ methods(S)
 
 %% declare 'fields' during allocation
 
-S = struct( 'Field1', [], 'Field2', [] ) % generate a structure with fields 1 and 2 and empty cells
+S = struct( 'Field1', [], 'Field2', [] ); % generate a structure with fields 1 and 2 and empty cells
 
 fields(S)
 
@@ -234,8 +234,8 @@ fontWeight = 'Normal'; % set the font weight we want to use
 
 h = figure('Color','White'); % create a new graphic and assign it "h", which is the _figure handle_
 
-ax = plot( x, y, 'Color', 'r', 'LineWidth', 4 ); % change the color and line size
-
+l = plot( x, y, 'Color', 'r', 'LineWidth', 4 ); % change the color and line size
+ax = gca;
 xlabel('X','FontName',fontName , 'FontWeight',fontWeight ); % set xlabel and font properties
 ylabel('Y','FontName',fontName , 'FontWeight',fontWeight ); 
 
@@ -249,6 +249,7 @@ set(h, 'Units', 'Inches','Position',[1 1 8 4]); % set the graphic size unit and 
 % Investigate figure properties
 % Question 1: How do you change from inches to pixels?
 % Question 2: How do you change from portrait to landscape?
+
 
 
 % Question 3: How do you make the x-axis appear on top of the plot instead
@@ -303,46 +304,3 @@ help savefig
 savefig(h,'./firstFigure.fig');
 close all
 openfig('./firstFigure.fig');
-
-%% Mapping toolbox
-
-% http://www.mathworks.com/products/mapping/
-
-% MATLAB has "toolboxes" that are designed to aid specific tasks.
-% For example, they have a signal processing toolbox, an optimization
-% toolbox, a mapping toolbox, etc. The list goes on and on.
-
-%% Make a worldmap with coastlines
-
-worldmap('world');
-load('coastlines'); % load built-in MATLAB data called coastlines
-plotm(coastlat, coastlon);
-
-% NOTE: plotm(), not plot(). This is a special version of plot for the
-% Mapping toolbox.
-
-%% Let's try another example and save the figure handle so we can change properties
-
-h = worldmap('Europe');
-getm(h,'MapProjection')
-% For more on this projection stuff, look at the assigned reading for Week #4
-
-% Here are all of the projections that matlab knows
-% http://www.mathworks.com/help/map/summary-and-guide-to-projections.html
-
-%% Let's add some data (shape files in this case)
-
-geoshow( 'landareas.shp', 'FaceColor', [0.15 0.5 0.15] )
-geoshow( 'worldlakes.shp', 'FaceColor', 'cyan' )
-geoshow( 'worldrivers.shp', 'Color', 'blue' )
-geoshow( 'worldcities.shp', 'Marker', '.', 'Color', 'red' )
-                       
-%% what's geoshow()
-
-help geoshpw
-
-%% add a label 
-
-labelLat = 35;
-labelLon = 14;
-textm(labelLat, labelLon, 'Mediterranean Sea')
