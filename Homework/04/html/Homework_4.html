@@ -1,0 +1,400 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Homework_4</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-10-02"><meta name="DC.source" content="Homework_4.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Part 1</a></li><li><a href="#6">Part 2</a></li></ul></div><pre class="codeinput"><span class="comment">%JavierColton Homework 1</span>
+</pre><h2>Part 1<a name="2"></a></h2><pre class="codeinput">clc
+clear <span class="string">all</span>
+
+load (<span class="string">'topo.mat'</span>);
+load(<span class="string">'coastlines'</span>);
+
+<span class="comment">% setup figure properties that we want.</span>
+h = figure;
+h.InvertHardcopy = <span class="string">'off'</span>;
+h.Color = <span class="string">'k'</span>;
+h.Position = [100 100 1000 500];
+h.PaperPositionMode = <span class="string">'auto'</span>;
+
+<span class="comment">%setup the map axes</span>
+ax = axesm(<span class="string">'Mollweid'</span>, <span class="string">'Frame'</span>, <span class="string">'on'</span>, <span class="string">'Grid'</span>,<span class="string">'on'</span>);
+setm(ax, <span class="string">'MLabelLocation'</span>, 60);
+setm(ax, <span class="string">'PLabelLocation'</span>, 30);
+mlabel(<span class="string">'MLabelParallel'</span>, 0);
+plabel(<span class="string">'PLabelMeridian'</span>, -25);
+axis(<span class="string">'off'</span>);
+setm(ax, <span class="string">'FontColor'</span>, [0.9 0.9 0.9]);
+setm(ax, <span class="string">'GColor'</span>, [0.9 0.9 0.9]);
+
+plotm(coastlat, coastlon);
+LAT = topolatlim(1):topolatlim(2);
+LON =  topolonlim(1):topolonlim(2);
+
+idx180 = find(LON &gt; 180, 1); <span class="comment">% find first index of longitude array that is larger than 180 deg</span>
+LON(idx180:end) = LON(idx180:end) - 360; <span class="comment">% subtract 360 degrees to make lon interval [-180 180] instead of [0 360]</span>
+
+[lon, lat] = meshgrid(LON,LAT); <span class="comment">% compute the lat/lon of every grid point in topo</span>
+pcolorm(lat,lon,topo); <span class="comment">% plot the matrix of elevations on the map</span>
+demcmap(topo); <span class="comment">% give it a better colormap</span>
+
+colorbar;
+c = colorbar;
+c.Color = <span class="string">'w'</span>
+ylabel(c, <span class="string">'Elavation [m]'</span>);
+hold <span class="string">off</span>
+</pre><pre class="codeoutput">
+c = 
+
+  ColorBar with properties:
+
+    Location: 'eastoutside'
+      Limits: [-7.4730e+03 5.8123e+03]
+    FontSize: 9
+    Position: [0.8583 0.1560 0.0267 0.7240]
+       Units: 'normalized'
+
+  Use GET to show all properties
+
+</pre><img vspace="5" hspace="5" src="Homework_4_01.png" alt=""> <pre class="codeinput">distdim(topo, <span class="string">'m'</span>, <span class="string">'km'</span>);
+kmtopo=ans; <span class="comment">%pulls answers from function above and names it kmtopo</span>
+
+
+g = figure;
+g.InvertHardcopy = <span class="string">'off'</span>;
+g.Color = <span class="string">'k'</span>;
+g.Position = [100 100 1000 500];
+g.PaperPositionMode = <span class="string">'auto'</span>;
+
+<span class="comment">%setup the map axes</span>
+ax = axesm(<span class="string">'Mollweid'</span>, <span class="string">'Frame'</span>, <span class="string">'on'</span>, <span class="string">'Grid'</span>,<span class="string">'on'</span>);
+setm(ax, <span class="string">'MLabelLocation'</span>, 60);
+setm(ax, <span class="string">'PLabelLocation'</span>, 30);
+mlabel(<span class="string">'MLabelParallel'</span>, 0);
+plabel(<span class="string">'PLabelMeridian'</span>, -25);
+axis(<span class="string">'off'</span>);
+setm(ax, <span class="string">'FontColor'</span>, [0.9 0.9 0.9]);
+setm(ax, <span class="string">'GColor'</span>, [0.9 0.9 0.9]);
+
+plotm(coastlat, coastlon);
+LAT = topolatlim(1):topolatlim(2);
+LON =  topolonlim(1):topolonlim(2);
+
+idx180 = find(LON &gt; 180, 1); <span class="comment">% find first index of longitude array that is larger than 180 deg</span>
+LON(idx180:end) = LON(idx180:end) - 360; <span class="comment">% subtract 360 degrees to make lon interval [-180 180] instead of [0 360]</span>
+
+[lon, lat] = meshgrid(LON,LAT); <span class="comment">% compute the lat/lon of every grid point in topo</span>
+pcolorm(lat,lon,kmtopo); <span class="comment">% plot the matrix of elevations on the map</span>
+demcmap(kmtopo); <span class="comment">% give it a better colormap</span>
+
+colorbar;
+c = colorbar;
+c.Color = <span class="string">'w'</span>;
+
+ylabel(c, <span class="string">'Elavation [km]'</span>);
+hold <span class="string">off</span>
+
+
+kmtopo(kmtopo&gt;0)=0;
+</pre><img vspace="5" hspace="5" src="Homework_4_02.png" alt=""> <pre class="codeinput">g = figure;
+g.InvertHardcopy = <span class="string">'off'</span>;
+g.Color = <span class="string">'k'</span>;
+g.Position = [100 100 1000 500];
+g.PaperPositionMode = <span class="string">'auto'</span>;
+
+<span class="comment">%setup the map axes</span>
+ax = axesm(<span class="string">'Mollweid'</span>, <span class="string">'Frame'</span>, <span class="string">'on'</span>, <span class="string">'Grid'</span>,<span class="string">'on'</span>);
+setm(ax, <span class="string">'MLabelLocation'</span>, 60);
+setm(ax, <span class="string">'PLabelLocation'</span>, 30);
+mlabel(<span class="string">'MLabelParallel'</span>, 0);
+plabel(<span class="string">'PLabelMeridian'</span>, -25);
+axis(<span class="string">'off'</span>);
+setm(ax, <span class="string">'FontColor'</span>, [0.9 0.9 0.9]);
+setm(ax, <span class="string">'GColor'</span>, [0.9 0.9 0.9]);
+
+plotm(coastlat, coastlon);
+LAT = topolatlim(1):topolatlim(2);
+LON =  topolonlim(1):topolonlim(2);
+
+idx180 = find(LON &gt; 180, 1); <span class="comment">% find first index of longitude array that is larger than 180 deg</span>
+LON(idx180:end) = LON(idx180:end) - 360; <span class="comment">% subtract 360 degrees to make lon interval [-180 180] instead of [0 360]</span>
+
+[lon, lat] = meshgrid(LON,LAT); <span class="comment">% compute the lat/lon of every grid point in topo</span>
+pcolorm(lat,lon,kmtopo); <span class="comment">% plot the matrix of elevations on the map</span>
+demcmap(kmtopo); <span class="comment">% give it a better colormap</span>
+
+colorbar;
+c = colorbar;
+c.Color = <span class="string">'w'</span>;
+
+ylabel(c, <span class="string">'Elavation [km]'</span>);
+hold <span class="string">off</span>
+
+<span class="comment">% To Find the volume one must also find the area of each pixel. We the have</span>
+<span class="comment">% to multiply the area times the depth and add it up for</span>
+</pre><img vspace="5" hspace="5" src="Homework_4_03.png" alt=""> <pre class="codeinput">circ = 2*pi*6371
+pixelWidth = circ/360
+pixelHeight = (circ/2)/180
+pixelArea = pixelWidth * pixelHeight
+
+volumekmtopo = pixelArea * kmtopo;
+negativeTotalVolume = sum(sum(volumekmtopo));
+totalVolume = abs(negativeTotalVolume)
+</pre><pre class="codeoutput">
+circ =
+
+   4.0030e+04
+
+
+pixelWidth =
+
+  111.1949
+
+
+pixelHeight =
+
+  111.1949
+
+
+pixelArea =
+
+   1.2364e+04
+
+
+totalVolume =
+
+   1.8226e+09
+
+</pre><h2>Part 2<a name="6"></a></h2><pre class="codeinput"><span class="comment">%We are slightly overestimating the value of ocean volume using this</span>
+<span class="comment">%method.</span>
+
+Acell = @(lat1,lat2) (pi*2*(6371^2)*abs(sin((pi/180)*lat1) - sin((pi/180)*lat2)))/360
+Acell(29,30)
+</pre><pre class="codeoutput">
+Acell = 
+
+    @(lat1,lat2)(pi*2*(6371^2)*abs(sin((pi/180)*lat1)-sin((pi/180)*lat2)))/360
+
+
+ans =
+
+   1.0761e+04
+
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%JavierColton Homework 1
+%% Part 1
+
+clc
+clear all
+
+load ('topo.mat');
+load('coastlines');
+
+% setup figure properties that we want.
+h = figure;
+h.InvertHardcopy = 'off';
+h.Color = 'k';
+h.Position = [100 100 1000 500];
+h.PaperPositionMode = 'auto';
+
+%setup the map axes
+ax = axesm('Mollweid', 'Frame', 'on', 'Grid','on');
+setm(ax, 'MLabelLocation', 60);
+setm(ax, 'PLabelLocation', 30);
+mlabel('MLabelParallel', 0);
+plabel('PLabelMeridian', -25);
+axis('off');
+setm(ax, 'FontColor', [0.9 0.9 0.9]);
+setm(ax, 'GColor', [0.9 0.9 0.9]);
+
+plotm(coastlat, coastlon);
+LAT = topolatlim(1):topolatlim(2);
+LON =  topolonlim(1):topolonlim(2);
+
+idx180 = find(LON > 180, 1); % find first index of longitude array that is larger than 180 deg 
+LON(idx180:end) = LON(idx180:end) - 360; % subtract 360 degrees to make lon interval [-180 180] instead of [0 360] 
+
+[lon, lat] = meshgrid(LON,LAT); % compute the lat/lon of every grid point in topo
+pcolorm(lat,lon,topo); % plot the matrix of elevations on the map
+demcmap(topo); % give it a better colormap
+
+colorbar; 
+c = colorbar;
+c.Color = 'w'
+ylabel(c, 'Elavation [m]');
+hold off
+
+%%
+distdim(topo, 'm', 'km');
+kmtopo=ans; %pulls answers from function above and names it kmtopo
+
+
+g = figure;
+g.InvertHardcopy = 'off';
+g.Color = 'k';
+g.Position = [100 100 1000 500];
+g.PaperPositionMode = 'auto';
+
+%setup the map axes
+ax = axesm('Mollweid', 'Frame', 'on', 'Grid','on');
+setm(ax, 'MLabelLocation', 60);
+setm(ax, 'PLabelLocation', 30);
+mlabel('MLabelParallel', 0);
+plabel('PLabelMeridian', -25);
+axis('off');
+setm(ax, 'FontColor', [0.9 0.9 0.9]);
+setm(ax, 'GColor', [0.9 0.9 0.9]);
+
+plotm(coastlat, coastlon);
+LAT = topolatlim(1):topolatlim(2);
+LON =  topolonlim(1):topolonlim(2);
+
+idx180 = find(LON > 180, 1); % find first index of longitude array that is larger than 180 deg 
+LON(idx180:end) = LON(idx180:end) - 360; % subtract 360 degrees to make lon interval [-180 180] instead of [0 360] 
+
+[lon, lat] = meshgrid(LON,LAT); % compute the lat/lon of every grid point in topo
+pcolorm(lat,lon,kmtopo); % plot the matrix of elevations on the map
+demcmap(kmtopo); % give it a better colormap
+
+colorbar; 
+c = colorbar;
+c.Color = 'w';
+
+ylabel(c, 'Elavation [km]');
+hold off
+
+
+kmtopo(kmtopo>0)=0;
+%%
+g = figure;
+g.InvertHardcopy = 'off';
+g.Color = 'k';
+g.Position = [100 100 1000 500];
+g.PaperPositionMode = 'auto';
+
+%setup the map axes
+ax = axesm('Mollweid', 'Frame', 'on', 'Grid','on');
+setm(ax, 'MLabelLocation', 60);
+setm(ax, 'PLabelLocation', 30);
+mlabel('MLabelParallel', 0);
+plabel('PLabelMeridian', -25);
+axis('off');
+setm(ax, 'FontColor', [0.9 0.9 0.9]);
+setm(ax, 'GColor', [0.9 0.9 0.9]);
+
+plotm(coastlat, coastlon);
+LAT = topolatlim(1):topolatlim(2);
+LON =  topolonlim(1):topolonlim(2);
+
+idx180 = find(LON > 180, 1); % find first index of longitude array that is larger than 180 deg 
+LON(idx180:end) = LON(idx180:end) - 360; % subtract 360 degrees to make lon interval [-180 180] instead of [0 360] 
+
+[lon, lat] = meshgrid(LON,LAT); % compute the lat/lon of every grid point in topo
+pcolorm(lat,lon,kmtopo); % plot the matrix of elevations on the map
+demcmap(kmtopo); % give it a better colormap
+
+colorbar; 
+c = colorbar;
+c.Color = 'w';
+
+ylabel(c, 'Elavation [km]');
+hold off
+
+% To Find the volume one must also find the area of each pixel. We the have
+% to multiply the area times the depth and add it up for 
+%%
+
+circ = 2*pi*6371
+pixelWidth = circ/360
+pixelHeight = (circ/2)/180
+pixelArea = pixelWidth * pixelHeight
+
+volumekmtopo = pixelArea * kmtopo;
+negativeTotalVolume = sum(sum(volumekmtopo));
+totalVolume = abs(negativeTotalVolume)
+
+%% Part 2
+%We are slightly overestimating the value of ocean volume using this
+%method.
+
+Acell = @(lat1,lat2) (pi*2*(6371^2)*abs(sin((pi/180)*lat1) - sin((pi/180)*lat2)))/360
+Acell(29,30)
+
+%%
+
+
+
+
+
+
+
+
+
+
+
+##### SOURCE END #####
+--></body></html>
