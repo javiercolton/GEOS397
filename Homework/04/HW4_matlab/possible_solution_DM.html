@@ -1,0 +1,1158 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>possible_solution_DM</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-10-11"><meta name="DC.source" content="possible_solution_DM.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">1. load elevation data (1x1 degree Matlab internal file)</a></li><li><a href="#3">2. load the coastlines data</a></li><li><a href="#4">3. plot nice initial model</a></li><li><a href="#5">3. determine the gridpoints with positive elevations (i.e. above sea-level)</a></li><li><a href="#6">4. calculate volume using the 1x1 degree grid</a></li><li><a href="#7">5. What's wrong with this approach to estimating the ocean volume?</a></li><li><a href="#8">plot empty sphere</a></li><li><a href="#9">plot empty sphere</a></li><li><a href="#10">plot on the sphere</a></li><li><a href="#11">now let's compute the volume of the ocean</a></li><li><a href="#13">6. volume of meltwater in the poles</a></li><li><a href="#14">7. compute the volume of water on antartica</a></li><li><a href="#15">Now determine the new coastline from adding all of that water to the ocean</a></li><li><a href="#17">b) Greenland above sea level</a></li></ul></div><pre class="codeinput">clear <span class="string">all</span>
+close <span class="string">all</span>
+clc
+
+<span class="comment">% HW4</span>
+
+saveFigs = 0; <span class="comment">% set to 1 to save figures</span>
+</pre><h2>1. load elevation data (1x1 degree Matlab internal file)<a name="2"></a></h2><pre class="codeinput">load( <span class="string">'topo.mat'</span> ); <span class="comment">% matlab knows where this file is</span>
+<span class="comment">% This a raster data type</span>
+</pre><h2>2. load the coastlines data<a name="3"></a></h2><pre class="codeinput">load(<span class="string">'coastlines'</span>); <span class="comment">% load built-in MATLAB data called coastlines</span>
+<span class="comment">% This is a vector data type</span>
+</pre><h2>3. plot nice initial model<a name="4"></a></h2><pre class="codeinput"><span class="comment">% setup topo map limits</span>
+LAT = topolatlim(1):topolatlim(2);
+LON =  topolonlim(1):topolonlim(2);
+[lon, lat] = meshgrid(LON,LAT); <span class="comment">% compute the lat/lon of every grid point in topo</span>
+
+<span class="comment">% setup the figure properties that we want</span>
+h = figure; <span class="comment">% your comment</span>
+h.InvertHardcopy = <span class="string">'off'</span>; <span class="comment">% your comment</span>
+h.Color = <span class="string">'k'</span>;  <span class="comment">% your comment</span>
+h.Position = [100 100 1000 500]; <span class="comment">% your comment</span>
+h.PaperPositionMode = <span class="string">'auto'</span>; <span class="comment">% your comment</span>
+
+<span class="comment">% setup the map axes</span>
+ax = axesm(<span class="string">'Mollweid'</span>, <span class="string">'Frame'</span>, <span class="string">'on'</span>, <span class="string">'Grid'</span>, <span class="string">'on'</span>);
+setm(ax,<span class="string">'MLabelLocation'</span>,60);
+setm(ax,<span class="string">'PLabelLocation'</span>,30);
+mlabel(<span class="string">'MLabelParallel'</span>,0); <span class="comment">% set the Meridian label at the zero parallel</span>
+plabel(<span class="string">'PLabelMeridian'</span>,-25); <span class="comment">% set the Parallel label at the 15W meridian</span>
+axis(<span class="string">'off'</span>); <span class="comment">% make sure axis is off -- this removes the non-ellipsoidal background white color</span>
+setm(ax,<span class="string">'FontColor'</span>,[0.9 0.9 0.9]); <span class="comment">% to change axesm properties you have to use setm, not ax.PropertyName like other handles</span>
+setm(ax,<span class="string">'GColor'</span>,[0.9 0.9 0.9]);
+
+<span class="comment">% plot the topo data</span>
+pcolorm(lat,lon,topo); <span class="comment">% plot the matrix of elevations on the map</span>
+hold <span class="string">on</span>;
+demcmap(topo); <span class="comment">% give it a better colormap</span>
+plotm(coastlat, coastlon,<span class="string">'r'</span>);
+
+<span class="comment">% add a colorbar and set properties</span>
+c = colorbar;
+c.Label.String = <span class="string">'Elevation [m]'</span>;
+c.Color = [0.9 0.9 0.9];
+set( findall( h, <span class="string">'-property'</span>, <span class="string">'FontSize'</span> ), <span class="string">'FontSize'</span>, 16 );
+set( findall( h, <span class="string">'-property'</span>, <span class="string">'FontWeight'</span> ), <span class="string">'FontWeight'</span>, <span class="string">'Bold'</span> );
+
+<span class="comment">% axesmui; % can use GUI to set some properties</span>
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./basemap.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="possible_solution_DM_01.png" alt=""> <h2>3. determine the gridpoints with positive elevations (i.e. above sea-level)<a name="5"></a></h2><pre class="codeinput"><span class="comment">% use logical indexing to find point above sea level</span>
+[iy, ix] = find( topo &gt; 0 );
+
+ocean = topo; <span class="comment">% copy the topography grid</span>
+
+<span class="comment">% set all topography above sea-level to 0 altitude</span>
+<span class="keyword">for</span> ii = 1 : size( ix, 1 )
+    ocean( iy(ii), ix(ii) ) = 0;
+<span class="keyword">end</span>
+ocean = ocean .* 1e-3; <span class="comment">% [km] convert ocean depth to km</span>
+
+<span class="comment">% plot the new topography grid data with no points above sea-level</span>
+
+<span class="comment">% setup the figure properties that we want</span>
+h = figure; <span class="comment">% your comment</span>
+h.InvertHardcopy = <span class="string">'off'</span>; <span class="comment">% your comment</span>
+h.Color = <span class="string">'k'</span>;  <span class="comment">% your comment</span>
+h.Position = [100 100 1000 500]; <span class="comment">% your comment</span>
+h.PaperPositionMode = <span class="string">'auto'</span>; <span class="comment">% your comment</span>
+
+<span class="comment">% setup the map axes</span>
+ax = axesm(<span class="string">'Mollweid'</span>, <span class="string">'Frame'</span>, <span class="string">'on'</span>, <span class="string">'Grid'</span>, <span class="string">'on'</span>);
+setm(ax,<span class="string">'MLabelLocation'</span>,60);
+setm(ax,<span class="string">'PLabelLocation'</span>,30);
+mlabel(<span class="string">'MLabelParallel'</span>,0); <span class="comment">% set the Meridian label at the zero parallel</span>
+plabel(<span class="string">'PLabelMeridian'</span>,-25); <span class="comment">% set the Parallel label at the 15W meridian</span>
+axis(<span class="string">'off'</span>); <span class="comment">% make sure axis is off -- this removes the non-ellipsoidal background white color</span>
+setm(ax,<span class="string">'FontColor'</span>,[0.9 0.9 0.9]); <span class="comment">% to change axesm properties you have to use setm, not ax.PropertyName like other handles</span>
+setm(ax,<span class="string">'GColor'</span>,[0.9 0.9 0.9]);
+
+<span class="comment">% plot the topo data</span>
+pcolorm(lat,lon,ocean); <span class="comment">% plot the matrix of elevations on the map</span>
+hold <span class="string">on</span>;
+demcmap(topo*1e-3); <span class="comment">% give it a better colormap (make sure to convert to km to match ocean)</span>
+plotm(coastlat, coastlon,<span class="string">'r'</span>);
+
+<span class="comment">% add a colorbar and set properties</span>
+c = colorbar;
+c.Label.String = <span class="string">'Elevation [km]'</span>;
+c.Color = [0.9 0.9 0.9];
+set( findall( h, <span class="string">'-property'</span>, <span class="string">'FontSize'</span> ), <span class="string">'FontSize'</span>, 16 );
+set( findall( h, <span class="string">'-property'</span>, <span class="string">'FontWeight'</span> ), <span class="string">'FontWeight'</span>, <span class="string">'Bold'</span> );
+
+<span class="comment">% axesmui; % can use GUI to set some properties</span>
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./ocean.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="possible_solution_DM_02.png" alt=""> <h2>4. calculate volume using the 1x1 degree grid<a name="6"></a></h2><pre class="codeinput"><span class="comment">% Now we want to calculate the volume in the oceans as of today. This means</span>
+<span class="comment">% we need to multiply the surface area by the thickness. As a first go,</span>
+<span class="comment">% let's compute the surface area at the equator?</span>
+
+[nLat, nLon] = size( topo );
+
+<span class="comment">% Part a) compute the surface area of 1x1 degree grid</span>
+
+R = 6371; <span class="comment">% [km] radius of Earth</span>
+dlonRad = 2 * pi / nLon; <span class="comment">% [rad] distance between 2 pixel in Longitude direction</span>
+dlonKM = R * dlonRad;  <span class="comment">% [km] distance</span>
+
+dlatRad = pi / nLat; <span class="comment">% [rad] distance between 2 pixel in Latitude direction</span>
+dlatKM = R * dlatRad;  <span class="comment">% [km] distance</span>
+
+surfaceArea = dlatKM * dlonKM; <span class="comment">% [km^2]</span>
+
+pixelVolume = -1 .* ocean .* surfaceArea; <span class="comment">% [km^3] correct depth for sign</span>
+
+volume_A = sum( sum( pixelVolume ) );
+</pre><h2>5. What's wrong with this approach to estimating the ocean volume?<a name="7"></a></h2><pre class="codeinput"><span class="comment">% Well, the surface area should change with latitude!!</span>
+<span class="comment">% How can we do better?? We can compute a more accurate surface area that</span>
+<span class="comment">% accounts for the latitude of each pixel.</span>
+
+<span class="comment">% The trick is to compute the correct surface area is to use two spherical</span>
+<span class="comment">% caps. You compute the surface area of one spherical cap at the bottom</span>
+<span class="comment">% latitude and one at the top latitude. Then you subtract those two. What</span>
+<span class="comment">% you have left is the surface area around the circumference of the sphere</span>
+<span class="comment">% between two lines of latitude. Then you just take whatever percentage of</span>
+<span class="comment">% that area you want based on your longitudinal width.</span>
+
+<span class="comment">% So let's compute the different surface areas from one pole to the other</span>
+<span class="comment">% at 1 deg latitude increments.</span>
+
+<span class="keyword">for</span> ii = 1 : numel( LAT ) - 1
+    capArea(ii) = ( 2 * pi * R^2 ) .* abs( sind( LAT(ii) ) - sind( LAT(ii+1) ) ); <span class="comment">% [km^2]</span>
+<span class="keyword">end</span>
+
+<span class="comment">% Now let's take the percentage of that related to 1 degree of longitude</span>
+<span class="comment">% change</span>
+dlonPerc = 1/360; <span class="comment">% [unitless]</span>
+
+capArea = capArea .* dlonPerc; <span class="comment">% [km^2]</span>
+
+<span class="comment">% Let's now make a matrix of the surface area of each pixel</span>
+<span class="keyword">for</span> jj = 1 : numel( LON ) - 1
+    pixelArea(:,jj) = capArea;
+<span class="keyword">end</span>
+
+h = figure;
+imagesc( LON, LAT, pixelArea );
+c = colorbar;
+
+set(h,<span class="string">'PaperPositionMode'</span>,<span class="string">'Auto'</span>);
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./gridArea.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="possible_solution_DM_03.png" alt=""> <h2>plot empty sphere<a name="8"></a></h2><pre class="codeinput">h  = figure;
+[x,y,z] = sphere(50);          <span class="comment">% create a sphere</span>
+s = surface(x,y,z);            <span class="comment">% plot spherical surface</span>
+
+s.CData = pixelArea .* 0;                <span class="comment">% set color data to topographic data</span>
+s.FaceColor = <span class="string">'texturemap'</span>;    <span class="comment">% use texture mapping</span>
+<span class="comment">% s.EdgeColor = 'none';          % remove edges</span>
+<span class="comment">% s.FaceLighting = 'gouraud';    % preferred lighting for curved surfaces</span>
+<span class="comment">% s.SpecularStrength = 0.4;      % change the strength of the reflected light</span>
+
+<span class="comment">% light('Position',[-1 0 1])     % add a light</span>
+axis <span class="string">square</span> <span class="string">off</span>                <span class="comment">% set axis to square and remove axis</span>
+view([-30,30])                 <span class="comment">% set the viewing angle</span>
+
+set(h,<span class="string">'PaperPositionMode'</span>,<span class="string">'Auto'</span>);
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./emptySphere.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="possible_solution_DM_04.png" alt=""> <h2>plot empty sphere<a name="9"></a></h2><pre class="codeinput">h  = figure;
+[x,y,z] = sphere(50);          <span class="comment">% create a sphere</span>
+s = surface(x,y,z);            <span class="comment">% plot spherical surface</span>
+
+upperCap = pixelArea .* 0 + 1;
+upperCap(1:120,:) = 0;
+
+s.CData = upperCap;                <span class="comment">% set color data to topographic data</span>
+s.FaceColor = <span class="string">'texturemap'</span>;    <span class="comment">% use texture mapping</span>
+s.EdgeColor = <span class="string">'none'</span>;          <span class="comment">% remove edges</span>
+<span class="comment">% s.FaceLighting = 'gouraud';    % preferred lighting for curved surfaces</span>
+<span class="comment">% s.SpecularStrength = 0.4;      % change the strength of the reflected light</span>
+
+<span class="comment">% light('Position',[-1 0 1])     % add a light</span>
+axis <span class="string">square</span> <span class="string">off</span>                <span class="comment">% set axis to square and remove axis</span>
+view([-30,30])                 <span class="comment">% set the viewing angle</span>
+
+set(h,<span class="string">'PaperPositionMode'</span>,<span class="string">'Auto'</span>);
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./upperSphere.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+
+h  = figure;
+[x,y,z] = sphere(50);          <span class="comment">% create a sphere</span>
+s = surface(x,y,z);            <span class="comment">% plot spherical surface</span>
+
+upperCap = pixelArea .* 0 + 1;
+upperCap(1:119,:) = 0;
+
+s.CData = upperCap;                <span class="comment">% set color data to topographic data</span>
+s.FaceColor = <span class="string">'texturemap'</span>;    <span class="comment">% use texture mapping</span>
+s.EdgeColor = <span class="string">'none'</span>;          <span class="comment">% remove edges</span>
+<span class="comment">% s.FaceLighting = 'gouraud';    % preferred lighting for curved surfaces</span>
+<span class="comment">% s.SpecularStrength = 0.4;      % change the strength of the reflected light</span>
+
+<span class="comment">% light('Position',[-1 0 1])     % add a light</span>
+axis <span class="string">square</span> <span class="string">off</span>                <span class="comment">% set axis to square and remove axis</span>
+view([-30,30])                 <span class="comment">% set the viewing angle</span>
+
+set(h,<span class="string">'PaperPositionMode'</span>,<span class="string">'Auto'</span>);
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./lowerSphere.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+
+h  = figure;
+[x,y,z] = sphere(50);          <span class="comment">% create a sphere</span>
+s = surface(x,y,z);            <span class="comment">% plot spherical surface</span>
+
+upperCap = pixelArea .* 0 + 1;
+upperCap(1:119,:) = 0;
+upperCap(121:end,:) = 0;
+
+s.CData = upperCap;                <span class="comment">% set color data to topographic data</span>
+s.FaceColor = <span class="string">'texturemap'</span>;    <span class="comment">% use texture mapping</span>
+s.EdgeColor = <span class="string">'none'</span>;          <span class="comment">% remove edges</span>
+<span class="comment">% s.FaceLighting = 'gouraud';    % preferred lighting for curved surfaces</span>
+<span class="comment">% s.SpecularStrength = 0.4;      % change the strength of the reflected light</span>
+
+<span class="comment">% light('Position',[-1 0 1])     % add a light</span>
+axis <span class="string">square</span> <span class="string">off</span>                <span class="comment">% set axis to square and remove axis</span>
+view([-30,30])                 <span class="comment">% set the viewing angle</span>
+
+set(h,<span class="string">'PaperPositionMode'</span>,<span class="string">'Auto'</span>);
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./diffSphere.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="possible_solution_DM_05.png" alt=""> <img vspace="5" hspace="5" src="possible_solution_DM_06.png" alt=""> <img vspace="5" hspace="5" src="possible_solution_DM_07.png" alt=""> <h2>plot on the sphere<a name="10"></a></h2><pre class="codeinput">h = figure;
+[x,y,z] = sphere(50);          <span class="comment">% create a sphere</span>
+s = surface(x,y,z);            <span class="comment">% plot spherical surface</span>
+
+s.CData = pixelArea;                <span class="comment">% set color data to topographic data</span>
+s.FaceColor = <span class="string">'texturemap'</span>;    <span class="comment">% use texture mapping</span>
+<span class="comment">% s.EdgeColor = 'none';          % remove edges</span>
+<span class="comment">% s.FaceLighting = 'gouraud';    % preferred lighting for curved surfaces</span>
+<span class="comment">% s.SpecularStrength = 0.4;      % change the strength of the reflected light</span>
+
+<span class="comment">% light('Position',[-1 0 1])     % add a light</span>
+axis <span class="string">square</span> <span class="string">off</span>                <span class="comment">% set axis to square and remove axis</span>
+view([-30,30])                 <span class="comment">% set the viewing angle</span>
+
+c = colorbar;
+c.Label.String = <span class="string">'Surface area [km^2]'</span>;
+
+set(h,<span class="string">'PaperPositionMode'</span>,<span class="string">'Auto'</span>);
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./sphereArea.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="possible_solution_DM_08.png" alt=""> <h2>now let's compute the volume of the ocean<a name="11"></a></h2><pre class="codeinput">pixelVolume = -1 .* ocean .* pixelArea; <span class="comment">% [km^3] correct depth for sign</span>
+
+volume_Current = sum( sum( pixelVolume ) );
+
+figure;
+[x,y,z] = sphere(50);          <span class="comment">% create a sphere</span>
+s = surface(x,y,z);            <span class="comment">% plot spherical surface</span>
+
+s.CData = pixelVolume;                <span class="comment">% set color data to topographic data</span>
+s.FaceColor = <span class="string">'texturemap'</span>;    <span class="comment">% use texture mapping</span>
+<span class="comment">% s.EdgeColor = 'none';          % remove edges</span>
+<span class="comment">% s.FaceLighting = 'gouraud';    % preferred lighting for curved surfaces</span>
+<span class="comment">% s.SpecularStrength = 0.4;      % change the strength of the reflected light</span>
+
+<span class="comment">% light('Position',[-1 0 1])     % add a light</span>
+axis <span class="string">square</span> <span class="string">off</span>                <span class="comment">% set axis to square and remove axis</span>
+view([-30,30])                 <span class="comment">% set the viewing angle</span>
+
+c = colorbar;
+c.Label.String = <span class="string">'Volume [km^3]'</span>;
+
+fprintf(<span class="string">'Difference between two methods = %e\n'</span>, volume_A - volume_Current );
+</pre><pre class="codeoutput">Difference between two methods = 4.856803e+08
+</pre><img vspace="5" hspace="5" src="possible_solution_DM_09.png" alt=""> <pre class="codeinput"><span class="comment">%--------------------------------------------------------------------------</span>
+<span class="comment">%--------------------------------------------------------------------------</span>
+<span class="comment">%--------------------------------------------------------------------------</span>
+<span class="comment">%--------------------------------------------------------------------------</span>
+<span class="comment">% Now let's melt antartica and see what happens</span>
+<span class="comment">%--------------------------------------------------------------------------</span>
+<span class="comment">%--------------------------------------------------------------------------</span>
+<span class="comment">%--------------------------------------------------------------------------</span>
+<span class="comment">%--------------------------------------------------------------------------</span>
+</pre><h2>6. volume of meltwater in the poles<a name="13"></a></h2><pre class="codeinput"><span class="comment">% a) Antarctica is entirely below 60 deg S</span>
+
+antarcticaLatitudeIndex = 1 : 30; <span class="comment">% indices of the latitudes covering Antarctica</span>
+
+antarcticaTopo = topo( antarcticaLatitudeIndex, : ); <span class="comment">% part of topo that is Antarctica</span>
+
+[ixA, iyA] = find( antarcticaTopo &lt; 0 ); <span class="comment">% parts below zero elevation do not have ice</span>
+
+<span class="keyword">for</span> ii = 1 : size( ixA, 1 )
+    antarcticaTopo( ixA(ii), iyA(ii) ) = 0; <span class="comment">% so set no ice areas to zero</span>
+<span class="keyword">end</span>
+
+<span class="comment">% setup the figure properties that we want</span>
+h = figure; <span class="comment">% your comment</span>
+h.InvertHardcopy = <span class="string">'off'</span>; <span class="comment">% your comment</span>
+h.Color = <span class="string">'k'</span>;  <span class="comment">% your comment</span>
+h.Position = [100 100 1000 500]; <span class="comment">% your comment</span>
+h.PaperPositionMode = <span class="string">'auto'</span>; <span class="comment">% your comment</span>
+
+<span class="comment">% setup the map axes</span>
+ax = axesm(<span class="string">'Mollweid'</span>, <span class="string">'Frame'</span>, <span class="string">'on'</span>, <span class="string">'Grid'</span>, <span class="string">'on'</span>);
+setm(ax,<span class="string">'MLabelLocation'</span>,60);
+setm(ax,<span class="string">'PLabelLocation'</span>,30);
+mlabel(<span class="string">'MLabelParallel'</span>,0); <span class="comment">% set the Meridian label at the zero parallel</span>
+plabel(<span class="string">'PLabelMeridian'</span>,-25); <span class="comment">% set the Parallel label at the 15W meridian</span>
+axis(<span class="string">'off'</span>); <span class="comment">% make sure axis is off -- this removes the non-ellipsoidal background white color</span>
+setm(ax,<span class="string">'FontColor'</span>,[0.9 0.9 0.9]); <span class="comment">% to change axesm properties you have to use setm, not ax.PropertyName like other handles</span>
+setm(ax,<span class="string">'GColor'</span>,[0.9 0.9 0.9]);
+
+antarcticaTopo = antarcticaTopo .* 1e-3; <span class="comment">% [km] convert</span>
+
+<span class="comment">% plot the topo data</span>
+pcolorm(LAT(antarcticaLatitudeIndex),LON,antarcticaTopo); <span class="comment">% plot the matrix of elevations on the map</span>
+hold <span class="string">on</span>;
+<span class="comment">% demcmap(topo*1e-3); % give it a better colormap (make sure to convert to km to match ocean)</span>
+plotm(coastlat, coastlon,<span class="string">'r'</span>);
+
+<span class="comment">% add a colorbar and set properties</span>
+c = colorbar;
+c.Label.String = <span class="string">'Elevation [km]'</span>;
+c.Color = [0.9 0.9 0.9];
+set( findall( h, <span class="string">'-property'</span>, <span class="string">'FontSize'</span> ), <span class="string">'FontSize'</span>, 16 );
+set( findall( h, <span class="string">'-property'</span>, <span class="string">'FontWeight'</span> ), <span class="string">'FontWeight'</span>, <span class="string">'Bold'</span> );
+
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./antarctica.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="possible_solution_DM_10.png" alt=""> <h2>7. compute the volume of water on antartica<a name="14"></a></h2><pre class="codeinput">pixelVolume = antarcticaTopo .* pixelArea(antarcticaLatitudeIndex,:); <span class="comment">% [km^3] correct depth for sign</span>
+pixelVolume = pixelVolume .* 0.9; <span class="comment">% [km^3] water volume is about 90% of ice volume</span>
+
+antarcticaVolume = sum( sum( pixelVolume ) ); <span class="comment">% [km^3] total volume</span>
+
+fprintf(<span class="string">'Volume of water on antarctica = %e\n'</span>, antarcticaVolume );
+
+<span class="comment">% setup the figure properties that we want</span>
+h = figure; <span class="comment">% your comment</span>
+h.InvertHardcopy = <span class="string">'off'</span>; <span class="comment">% your comment</span>
+h.Color = <span class="string">'k'</span>;  <span class="comment">% your comment</span>
+h.Position = [100 100 1000 500]; <span class="comment">% your comment</span>
+h.PaperPositionMode = <span class="string">'auto'</span>; <span class="comment">% your comment</span>
+
+<span class="comment">% setup the map axes</span>
+ax = axesm(<span class="string">'Mollweid'</span>, <span class="string">'Frame'</span>, <span class="string">'on'</span>, <span class="string">'Grid'</span>, <span class="string">'on'</span>);
+setm(ax,<span class="string">'MLabelLocation'</span>,60);
+setm(ax,<span class="string">'PLabelLocation'</span>,30);
+mlabel(<span class="string">'MLabelParallel'</span>,0); <span class="comment">% set the Meridian label at the zero parallel</span>
+plabel(<span class="string">'PLabelMeridian'</span>,-25); <span class="comment">% set the Parallel label at the 15W meridian</span>
+axis(<span class="string">'off'</span>); <span class="comment">% make sure axis is off -- this removes the non-ellipsoidal background white color</span>
+setm(ax,<span class="string">'FontColor'</span>,[0.9 0.9 0.9]); <span class="comment">% to change axesm properties you have to use setm, not ax.PropertyName like other handles</span>
+setm(ax,<span class="string">'GColor'</span>,[0.9 0.9 0.9]);
+
+<span class="comment">% plot the topo data</span>
+pcolorm(LAT(antarcticaLatitudeIndex),LON,pixelVolume); <span class="comment">% plot the matrix of elevations on the map</span>
+hold <span class="string">on</span>;
+<span class="comment">% demcmap(topo*1e-3); % give it a better colormap (make sure to convert to km to match ocean)</span>
+plotm(coastlat, coastlon,<span class="string">'r'</span>);
+
+<span class="comment">% add a colorbar and set properties</span>
+c = colorbar;
+c.Label.String = <span class="string">'Volume [km^3]'</span>;
+c.Color = [0.9 0.9 0.9];
+set( findall( h, <span class="string">'-property'</span>, <span class="string">'FontSize'</span> ), <span class="string">'FontSize'</span>, 16 );
+set( findall( h, <span class="string">'-property'</span>, <span class="string">'FontWeight'</span> ), <span class="string">'FontWeight'</span>, <span class="string">'Bold'</span> );
+
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./antarcticaVolume.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Volume of water on antarctica = 2.444419e+07
+</pre><img vspace="5" hspace="5" src="possible_solution_DM_11.png" alt=""> <h2>Now determine the new coastline from adding all of that water to the ocean<a name="15"></a></h2><pre class="codeinput"><span class="comment">% We do this by incrementally adding one meter of water to the current sea</span>
+<span class="comment">% level and computing the new volume. When the new volume minus the current</span>
+<span class="comment">% volume equals the volume that we just computed is stored on Antarctica</span>
+<span class="comment">% then we have found the solution to how much sea-level would rise if</span>
+<span class="comment">% Antarctica melted.</span>
+
+<span class="comment">% Make a vector of incremental increases</span>
+slIncrease = 1 : 100; <span class="comment">% [m] incremental steps</span>
+nSteps = numel( slIncrease ); <span class="comment">% number of steps</span>
+
+<span class="keyword">for</span> iSlIncrease = 1 : nSteps
+
+    <span class="comment">% compute the new ocean map if sea-level rose</span>
+    oceanNew = topo - slIncrease( iSlIncrease );
+
+    [iy,ix] = find( topo &gt; slIncrease(iSlIncrease) );
+    <span class="keyword">for</span> ii = 1 : size( ix, 1 )
+        oceanNew( iy(ii), ix(ii) ) = 0; <span class="comment">% set all height above sea-level to zero</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% compute the total volume for this increased sea-level</span>
+    oceanNew = oceanNew ./ 1000; <span class="comment">% [km] convert to meters</span>
+    oceanNew = oceanNew .* -1; <span class="comment">% change direction of positive</span>
+    volNew = oceanNew .* pixelArea; <span class="comment">% [km^3]</span>
+
+    <span class="comment">% c) new total is new volume minus old volume</span>
+    dVol( iSlIncrease ) = sum( sum( volNew ) ) - volume_Current;
+<span class="keyword">end</span>
+<span class="comment">% sea-level index that gives closest volume</span>
+[~,slIdx] = min( abs( antarcticaVolume - dVol ) );
+
+<span class="comment">% d) show result; estimated rise is 80 m</span>
+h = figure;
+plot( slIncrease, dVol, <span class="string">'ko'</span> ); hold <span class="string">on</span>; grid <span class="string">on</span>;
+plot( [0 max(slIncrease)], [antarcticaVolume antarcticaVolume], <span class="string">'r'</span> );
+xlabel( <span class="string">'Sea-level rise [m]'</span> );
+ylabel( <span class="string">'Volume of meltwater added to oceans [km^3]'</span> );
+title( <span class="string">'Sea-level rise influence on oceans volume'</span> );
+legend(<span class="string">'Tested sea-level heights'</span>,<span class="string">'Volume from Antarctica'</span>);
+legend(<span class="string">'Location'</span>,<span class="string">'NorthWest'</span>); legend <span class="string">boxoff</span>;
+
+set(h,<span class="string">'PaperPositionMode'</span>,<span class="string">'Auto'</span>);
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./seaLevelModel.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="possible_solution_DM_12.png" alt=""> <pre class="codeinput"><span class="comment">% setup the figure properties that we want</span>
+h = figure; <span class="comment">% your comment</span>
+h.InvertHardcopy = <span class="string">'off'</span>; <span class="comment">% your comment</span>
+h.Color = <span class="string">'k'</span>;  <span class="comment">% your comment</span>
+h.Position = [100 100 1000 500]; <span class="comment">% your comment</span>
+h.PaperPositionMode = <span class="string">'auto'</span>; <span class="comment">% your comment</span>
+
+<span class="comment">% setup the map axes</span>
+ax = axesm(<span class="string">'Mollweid'</span>, <span class="string">'Frame'</span>, <span class="string">'on'</span>, <span class="string">'Grid'</span>, <span class="string">'on'</span>);
+setm(ax,<span class="string">'MLabelLocation'</span>,60);
+setm(ax,<span class="string">'PLabelLocation'</span>,30);
+mlabel(<span class="string">'MLabelParallel'</span>,0); <span class="comment">% set the Meridian label at the zero parallel</span>
+plabel(<span class="string">'PLabelMeridian'</span>,-25); <span class="comment">% set the Parallel label at the 15W meridian</span>
+axis(<span class="string">'off'</span>); <span class="comment">% make sure axis is off -- this removes the non-ellipsoidal background white color</span>
+setm(ax,<span class="string">'FontColor'</span>,[0.9 0.9 0.9]); <span class="comment">% to change axesm properties you have to use setm, not ax.PropertyName like other handles</span>
+setm(ax,<span class="string">'GColor'</span>,[0.9 0.9 0.9]);
+
+<span class="comment">% plot the topo data</span>
+pcolorm(lat,lon,topo); <span class="comment">% plot the matrix of elevations on the map</span>
+hold <span class="string">on</span>;
+demcmap(topo); <span class="comment">% give it a better colormap (make sure to convert to km to match ocean)</span>
+plotm(coastlat, coastlon,<span class="string">'r'</span>);
+contourm( LAT(1:end-1), LON(1:end-1), topo, [slIncrease(slIdx) slIncrease(slIdx)],<span class="string">'g'</span>);
+
+<span class="comment">% add a colorbar and set properties</span>
+c = colorbar;
+c.Label.String = <span class="string">'Elevation [m]'</span>;
+c.Color = [0.9 0.9 0.9];
+set( findall( h, <span class="string">'-property'</span>, <span class="string">'FontSize'</span> ), <span class="string">'FontSize'</span>, 16 );
+set( findall( h, <span class="string">'-property'</span>, <span class="string">'FontWeight'</span> ), <span class="string">'FontWeight'</span>, <span class="string">'Bold'</span> );
+
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./antarcticaSeaLevelRise.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="possible_solution_DM_13.png" alt=""> <h2>b) Greenland above sea level<a name="17"></a></h2><pre class="codeinput"><span class="comment">% selected boundary of Greenland by hand</span>
+xx = [ 297.3443, 287.1840, 303.6341, 321.0519, 352.9845]; <span class="comment">% note this is now between 0 to 360, not -180 to 180</span>
+yy = [ 177.1051, 166.4609, 157.2682, 139.3666, 175.6536]; <span class="comment">% note this is now between 0 to 180, not -90  to 90</span>
+
+<span class="comment">% to close polygon by appending beginning to end</span>
+xx = [ xx, xx(1) ];
+yy = [ yy, yy(1) ];
+
+<span class="comment">% determine the points that lie within the boudary</span>
+[X, Y] = meshgrid( 1:360, 1:180);
+in = inpolygon( X, Y, xx, yy ); <span class="comment">% true if in polygon, false otherwise</span>
+
+topoGreenland = in .* topo; <span class="comment">% get the greenland altitudes</span>
+
+[ixG, iyG] = find( topoGreenland &lt; 0 );
+<span class="keyword">for</span> ii = 1 : size( ixG, 1 )
+    <span class="comment">% set any elevations below sea level to zero</span>
+    topoGreenland( ixG(ii), iyG(ii) ) = 0;
+<span class="keyword">end</span>
+
+topoGreenland = topoGreenland ./ 1000; <span class="comment">% [km] convert altitude to km</span>
+volumeGreenland = topoGreenland .* pixelArea; <span class="comment">% [km^3]</span>
+VolG = sum(sum(volumeGreenland)) * 0.9; <span class="comment">% [km^3]</span>
+
+<span class="comment">% c) total volume is Greenland plus Antarctica</span>
+<span class="comment">% meltwater = VolG + VolA;</span>
+
+<span class="comment">% setup the figure properties that we want</span>
+h = figure; <span class="comment">% your comment</span>
+h.InvertHardcopy = <span class="string">'off'</span>; <span class="comment">% your comment</span>
+h.Color = <span class="string">'k'</span>;  <span class="comment">% your comment</span>
+h.Position = [100 100 1000 500]; <span class="comment">% your comment</span>
+h.PaperPositionMode = <span class="string">'auto'</span>; <span class="comment">% your comment</span>
+
+<span class="comment">% setup the map axes</span>
+ax = axesm(<span class="string">'Mollweid'</span>, <span class="string">'Frame'</span>, <span class="string">'on'</span>, <span class="string">'Grid'</span>, <span class="string">'on'</span>);
+setm(ax,<span class="string">'MLabelLocation'</span>,60);
+setm(ax,<span class="string">'PLabelLocation'</span>,30);
+mlabel(<span class="string">'MLabelParallel'</span>,0); <span class="comment">% set the Meridian label at the zero parallel</span>
+plabel(<span class="string">'PLabelMeridian'</span>,-25); <span class="comment">% set the Parallel label at the 15W meridian</span>
+axis(<span class="string">'off'</span>); <span class="comment">% make sure axis is off -- this removes the non-ellipsoidal background white color</span>
+setm(ax,<span class="string">'FontColor'</span>,[0.9 0.9 0.9]); <span class="comment">% to change axesm properties you have to use setm, not ax.PropertyName like other handles</span>
+setm(ax,<span class="string">'GColor'</span>,[0.9 0.9 0.9]);
+
+<span class="comment">% plot the topo data</span>
+pcolorm(lat,lon,topo); <span class="comment">% plot the matrix of elevations on the map</span>
+hold <span class="string">on</span>;
+demcmap(topo); <span class="comment">% give it a better colormap (make sure to convert to km to match ocean)</span>
+plotm( yy-90, xx, <span class="string">'r'</span> ); <span class="comment">% plot the boundary</span>
+plotm(Y(in)-90,X(in),<span class="string">'m.'</span>); <span class="comment">% plot the points</span>
+
+<span class="comment">% add a colorbar and set properties</span>
+c = colorbar;
+c.Label.String = <span class="string">'Elevation [m]'</span>;
+c.Color = [0.9 0.9 0.9];
+set( findall( h, <span class="string">'-property'</span>, <span class="string">'FontSize'</span> ), <span class="string">'FontSize'</span>, 16 );
+set( findall( h, <span class="string">'-property'</span>, <span class="string">'FontWeight'</span> ), <span class="string">'FontWeight'</span>, <span class="string">'Bold'</span> );
+
+<span class="keyword">if</span> saveFigs
+    print(h,<span class="string">'./greenlandNodes.png'</span>,<span class="string">'-dpng'</span>);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="possible_solution_DM_14.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+clear all
+close all
+clc
+
+% HW4 
+
+saveFigs = 0; % set to 1 to save figures
+
+%% 1. load elevation data (1x1 degree Matlab internal file)
+
+load( 'topo.mat' ); % matlab knows where this file is
+% This a raster data type
+
+%% 2. load the coastlines data
+
+load('coastlines'); % load built-in MATLAB data called coastlines
+% This is a vector data type
+
+%% 3. plot nice initial model
+
+% setup topo map limits
+LAT = topolatlim(1):topolatlim(2);
+LON =  topolonlim(1):topolonlim(2);
+[lon, lat] = meshgrid(LON,LAT); % compute the lat/lon of every grid point in topo
+
+% setup the figure properties that we want
+h = figure; % your comment
+h.InvertHardcopy = 'off'; % your comment
+h.Color = 'k';  % your comment
+h.Position = [100 100 1000 500]; % your comment
+h.PaperPositionMode = 'auto'; % your comment
+
+% setup the map axes
+ax = axesm('Mollweid', 'Frame', 'on', 'Grid', 'on');
+setm(ax,'MLabelLocation',60);
+setm(ax,'PLabelLocation',30);
+mlabel('MLabelParallel',0); % set the Meridian label at the zero parallel
+plabel('PLabelMeridian',-25); % set the Parallel label at the 15W meridian
+axis('off'); % make sure axis is off REPLACE_WITH_DASH_DASH this removes the non-ellipsoidal background white color
+setm(ax,'FontColor',[0.9 0.9 0.9]); % to change axesm properties you have to use setm, not ax.PropertyName like other handles
+setm(ax,'GColor',[0.9 0.9 0.9]);
+
+% plot the topo data
+pcolorm(lat,lon,topo); % plot the matrix of elevations on the map
+hold on; 
+demcmap(topo); % give it a better colormap
+plotm(coastlat, coastlon,'r');
+
+% add a colorbar and set properties
+c = colorbar;
+c.Label.String = 'Elevation [m]';
+c.Color = [0.9 0.9 0.9];
+set( findall( h, '-property', 'FontSize' ), 'FontSize', 16 );
+set( findall( h, '-property', 'FontWeight' ), 'FontWeight', 'Bold' );
+
+% axesmui; % can use GUI to set some properties
+if saveFigs
+    print(h,'./basemap.png','-dpng');
+end
+
+%% 3. determine the gridpoints with positive elevations (i.e. above sea-level)
+
+% use logical indexing to find point above sea level
+[iy, ix] = find( topo > 0 );
+
+ocean = topo; % copy the topography grid
+
+% set all topography above sea-level to 0 altitude
+for ii = 1 : size( ix, 1 )
+    ocean( iy(ii), ix(ii) ) = 0;
+end
+ocean = ocean .* 1e-3; % [km] convert ocean depth to km
+
+% plot the new topography grid data with no points above sea-level
+
+% setup the figure properties that we want
+h = figure; % your comment
+h.InvertHardcopy = 'off'; % your comment
+h.Color = 'k';  % your comment
+h.Position = [100 100 1000 500]; % your comment
+h.PaperPositionMode = 'auto'; % your comment
+
+% setup the map axes
+ax = axesm('Mollweid', 'Frame', 'on', 'Grid', 'on');
+setm(ax,'MLabelLocation',60);
+setm(ax,'PLabelLocation',30);
+mlabel('MLabelParallel',0); % set the Meridian label at the zero parallel
+plabel('PLabelMeridian',-25); % set the Parallel label at the 15W meridian
+axis('off'); % make sure axis is off REPLACE_WITH_DASH_DASH this removes the non-ellipsoidal background white color
+setm(ax,'FontColor',[0.9 0.9 0.9]); % to change axesm properties you have to use setm, not ax.PropertyName like other handles
+setm(ax,'GColor',[0.9 0.9 0.9]);
+
+% plot the topo data
+pcolorm(lat,lon,ocean); % plot the matrix of elevations on the map
+hold on; 
+demcmap(topo*1e-3); % give it a better colormap (make sure to convert to km to match ocean)
+plotm(coastlat, coastlon,'r');
+
+% add a colorbar and set properties
+c = colorbar;
+c.Label.String = 'Elevation [km]';
+c.Color = [0.9 0.9 0.9];
+set( findall( h, '-property', 'FontSize' ), 'FontSize', 16 );
+set( findall( h, '-property', 'FontWeight' ), 'FontWeight', 'Bold' );
+
+% axesmui; % can use GUI to set some properties
+if saveFigs
+    print(h,'./ocean.png','-dpng');
+end
+
+%% 4. calculate volume using the 1x1 degree grid
+
+% Now we want to calculate the volume in the oceans as of today. This means
+% we need to multiply the surface area by the thickness. As a first go,
+% let's compute the surface area at the equator?
+
+[nLat, nLon] = size( topo );
+
+% Part a) compute the surface area of 1x1 degree grid
+
+R = 6371; % [km] radius of Earth
+dlonRad = 2 * pi / nLon; % [rad] distance between 2 pixel in Longitude direction
+dlonKM = R * dlonRad;  % [km] distance 
+
+dlatRad = pi / nLat; % [rad] distance between 2 pixel in Latitude direction
+dlatKM = R * dlatRad;  % [km] distance 
+
+surfaceArea = dlatKM * dlonKM; % [km^2]
+
+pixelVolume = -1 .* ocean .* surfaceArea; % [km^3] correct depth for sign
+
+volume_A = sum( sum( pixelVolume ) );
+
+%% 5. What's wrong with this approach to estimating the ocean volume?
+
+% Well, the surface area should change with latitude!!
+% How can we do better?? We can compute a more accurate surface area that
+% accounts for the latitude of each pixel.
+
+% The trick is to compute the correct surface area is to use two spherical
+% caps. You compute the surface area of one spherical cap at the bottom
+% latitude and one at the top latitude. Then you subtract those two. What
+% you have left is the surface area around the circumference of the sphere
+% between two lines of latitude. Then you just take whatever percentage of
+% that area you want based on your longitudinal width.
+
+% So let's compute the different surface areas from one pole to the other
+% at 1 deg latitude increments.
+
+for ii = 1 : numel( LAT ) - 1
+    capArea(ii) = ( 2 * pi * R^2 ) .* abs( sind( LAT(ii) ) - sind( LAT(ii+1) ) ); % [km^2]
+end
+
+% Now let's take the percentage of that related to 1 degree of longitude
+% change
+dlonPerc = 1/360; % [unitless]
+
+capArea = capArea .* dlonPerc; % [km^2]
+
+% Let's now make a matrix of the surface area of each pixel
+for jj = 1 : numel( LON ) - 1
+    pixelArea(:,jj) = capArea;
+end
+
+h = figure;
+imagesc( LON, LAT, pixelArea );
+c = colorbar;
+
+set(h,'PaperPositionMode','Auto');
+if saveFigs
+    print(h,'./gridArea.png','-dpng');
+end
+
+%% plot empty sphere
+
+h  = figure;
+[x,y,z] = sphere(50);          % create a sphere 
+s = surface(x,y,z);            % plot spherical surface
+
+s.CData = pixelArea .* 0;                % set color data to topographic data
+s.FaceColor = 'texturemap';    % use texture mapping
+% s.EdgeColor = 'none';          % remove edges
+% s.FaceLighting = 'gouraud';    % preferred lighting for curved surfaces
+% s.SpecularStrength = 0.4;      % change the strength of the reflected light
+
+% light('Position',[-1 0 1])     % add a light
+axis square off                % set axis to square and remove axis
+view([-30,30])                 % set the viewing angle
+
+set(h,'PaperPositionMode','Auto');
+if saveFigs
+    print(h,'./emptySphere.png','-dpng');
+end
+
+%% plot empty sphere
+
+h  = figure;
+[x,y,z] = sphere(50);          % create a sphere 
+s = surface(x,y,z);            % plot spherical surface
+
+upperCap = pixelArea .* 0 + 1;
+upperCap(1:120,:) = 0;
+
+s.CData = upperCap;                % set color data to topographic data
+s.FaceColor = 'texturemap';    % use texture mapping
+s.EdgeColor = 'none';          % remove edges
+% s.FaceLighting = 'gouraud';    % preferred lighting for curved surfaces
+% s.SpecularStrength = 0.4;      % change the strength of the reflected light
+
+% light('Position',[-1 0 1])     % add a light
+axis square off                % set axis to square and remove axis
+view([-30,30])                 % set the viewing angle
+
+set(h,'PaperPositionMode','Auto');
+if saveFigs
+    print(h,'./upperSphere.png','-dpng');
+end
+
+h  = figure;
+[x,y,z] = sphere(50);          % create a sphere 
+s = surface(x,y,z);            % plot spherical surface
+
+upperCap = pixelArea .* 0 + 1;
+upperCap(1:119,:) = 0;
+
+s.CData = upperCap;                % set color data to topographic data
+s.FaceColor = 'texturemap';    % use texture mapping
+s.EdgeColor = 'none';          % remove edges
+% s.FaceLighting = 'gouraud';    % preferred lighting for curved surfaces
+% s.SpecularStrength = 0.4;      % change the strength of the reflected light
+
+% light('Position',[-1 0 1])     % add a light
+axis square off                % set axis to square and remove axis
+view([-30,30])                 % set the viewing angle
+
+set(h,'PaperPositionMode','Auto');
+if saveFigs
+    print(h,'./lowerSphere.png','-dpng');
+end
+
+h  = figure;
+[x,y,z] = sphere(50);          % create a sphere 
+s = surface(x,y,z);            % plot spherical surface
+
+upperCap = pixelArea .* 0 + 1;
+upperCap(1:119,:) = 0;
+upperCap(121:end,:) = 0;
+
+s.CData = upperCap;                % set color data to topographic data
+s.FaceColor = 'texturemap';    % use texture mapping
+s.EdgeColor = 'none';          % remove edges
+% s.FaceLighting = 'gouraud';    % preferred lighting for curved surfaces
+% s.SpecularStrength = 0.4;      % change the strength of the reflected light
+
+% light('Position',[-1 0 1])     % add a light
+axis square off                % set axis to square and remove axis
+view([-30,30])                 % set the viewing angle
+
+set(h,'PaperPositionMode','Auto');
+if saveFigs
+    print(h,'./diffSphere.png','-dpng');
+end
+
+%% plot on the sphere
+
+h = figure;
+[x,y,z] = sphere(50);          % create a sphere 
+s = surface(x,y,z);            % plot spherical surface
+
+s.CData = pixelArea;                % set color data to topographic data
+s.FaceColor = 'texturemap';    % use texture mapping
+% s.EdgeColor = 'none';          % remove edges
+% s.FaceLighting = 'gouraud';    % preferred lighting for curved surfaces
+% s.SpecularStrength = 0.4;      % change the strength of the reflected light
+
+% light('Position',[-1 0 1])     % add a light
+axis square off                % set axis to square and remove axis
+view([-30,30])                 % set the viewing angle
+
+c = colorbar;
+c.Label.String = 'Surface area [km^2]';
+
+set(h,'PaperPositionMode','Auto');
+if saveFigs
+    print(h,'./sphereArea.png','-dpng');
+end
+
+%% now let's compute the volume of the ocean
+
+pixelVolume = -1 .* ocean .* pixelArea; % [km^3] correct depth for sign
+
+volume_Current = sum( sum( pixelVolume ) );
+
+figure;
+[x,y,z] = sphere(50);          % create a sphere 
+s = surface(x,y,z);            % plot spherical surface
+
+s.CData = pixelVolume;                % set color data to topographic data
+s.FaceColor = 'texturemap';    % use texture mapping
+% s.EdgeColor = 'none';          % remove edges
+% s.FaceLighting = 'gouraud';    % preferred lighting for curved surfaces
+% s.SpecularStrength = 0.4;      % change the strength of the reflected light
+
+% light('Position',[-1 0 1])     % add a light
+axis square off                % set axis to square and remove axis
+view([-30,30])                 % set the viewing angle
+
+c = colorbar;
+c.Label.String = 'Volume [km^3]';
+
+fprintf('Difference between two methods = %e\n', volume_A - volume_Current );
+
+
+%%
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% Now let's melt antartica and see what happens
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+
+
+%% 6. volume of meltwater in the poles
+
+% a) Antarctica is entirely below 60 deg S
+
+antarcticaLatitudeIndex = 1 : 30; % indices of the latitudes covering Antarctica
+
+antarcticaTopo = topo( antarcticaLatitudeIndex, : ); % part of topo that is Antarctica
+
+[ixA, iyA] = find( antarcticaTopo < 0 ); % parts below zero elevation do not have ice
+
+for ii = 1 : size( ixA, 1 )
+    antarcticaTopo( ixA(ii), iyA(ii) ) = 0; % so set no ice areas to zero
+end
+
+% setup the figure properties that we want
+h = figure; % your comment
+h.InvertHardcopy = 'off'; % your comment
+h.Color = 'k';  % your comment
+h.Position = [100 100 1000 500]; % your comment
+h.PaperPositionMode = 'auto'; % your comment
+
+% setup the map axes
+ax = axesm('Mollweid', 'Frame', 'on', 'Grid', 'on');
+setm(ax,'MLabelLocation',60);
+setm(ax,'PLabelLocation',30);
+mlabel('MLabelParallel',0); % set the Meridian label at the zero parallel
+plabel('PLabelMeridian',-25); % set the Parallel label at the 15W meridian
+axis('off'); % make sure axis is off REPLACE_WITH_DASH_DASH this removes the non-ellipsoidal background white color
+setm(ax,'FontColor',[0.9 0.9 0.9]); % to change axesm properties you have to use setm, not ax.PropertyName like other handles
+setm(ax,'GColor',[0.9 0.9 0.9]);
+
+antarcticaTopo = antarcticaTopo .* 1e-3; % [km] convert
+
+% plot the topo data
+pcolorm(LAT(antarcticaLatitudeIndex),LON,antarcticaTopo); % plot the matrix of elevations on the map
+hold on; 
+% demcmap(topo*1e-3); % give it a better colormap (make sure to convert to km to match ocean)
+plotm(coastlat, coastlon,'r');
+
+% add a colorbar and set properties
+c = colorbar;
+c.Label.String = 'Elevation [km]';
+c.Color = [0.9 0.9 0.9];
+set( findall( h, '-property', 'FontSize' ), 'FontSize', 16 );
+set( findall( h, '-property', 'FontWeight' ), 'FontWeight', 'Bold' );
+
+if saveFigs
+    print(h,'./antarctica.png','-dpng');
+end
+
+%% 7. compute the volume of water on antartica
+
+pixelVolume = antarcticaTopo .* pixelArea(antarcticaLatitudeIndex,:); % [km^3] correct depth for sign
+pixelVolume = pixelVolume .* 0.9; % [km^3] water volume is about 90% of ice volume
+
+antarcticaVolume = sum( sum( pixelVolume ) ); % [km^3] total volume
+
+fprintf('Volume of water on antarctica = %e\n', antarcticaVolume );
+
+% setup the figure properties that we want
+h = figure; % your comment
+h.InvertHardcopy = 'off'; % your comment
+h.Color = 'k';  % your comment
+h.Position = [100 100 1000 500]; % your comment
+h.PaperPositionMode = 'auto'; % your comment
+
+% setup the map axes
+ax = axesm('Mollweid', 'Frame', 'on', 'Grid', 'on');
+setm(ax,'MLabelLocation',60);
+setm(ax,'PLabelLocation',30);
+mlabel('MLabelParallel',0); % set the Meridian label at the zero parallel
+plabel('PLabelMeridian',-25); % set the Parallel label at the 15W meridian
+axis('off'); % make sure axis is off REPLACE_WITH_DASH_DASH this removes the non-ellipsoidal background white color
+setm(ax,'FontColor',[0.9 0.9 0.9]); % to change axesm properties you have to use setm, not ax.PropertyName like other handles
+setm(ax,'GColor',[0.9 0.9 0.9]);
+
+% plot the topo data
+pcolorm(LAT(antarcticaLatitudeIndex),LON,pixelVolume); % plot the matrix of elevations on the map
+hold on; 
+% demcmap(topo*1e-3); % give it a better colormap (make sure to convert to km to match ocean)
+plotm(coastlat, coastlon,'r');
+
+% add a colorbar and set properties
+c = colorbar;
+c.Label.String = 'Volume [km^3]';
+c.Color = [0.9 0.9 0.9];
+set( findall( h, '-property', 'FontSize' ), 'FontSize', 16 );
+set( findall( h, '-property', 'FontWeight' ), 'FontWeight', 'Bold' );
+
+if saveFigs
+    print(h,'./antarcticaVolume.png','-dpng');
+end
+
+%% Now determine the new coastline from adding all of that water to the ocean
+
+% We do this by incrementally adding one meter of water to the current sea
+% level and computing the new volume. When the new volume minus the current
+% volume equals the volume that we just computed is stored on Antarctica
+% then we have found the solution to how much sea-level would rise if
+% Antarctica melted.
+
+% Make a vector of incremental increases
+slIncrease = 1 : 100; % [m] incremental steps
+nSteps = numel( slIncrease ); % number of steps
+
+for iSlIncrease = 1 : nSteps
+    
+    % compute the new ocean map if sea-level rose
+    oceanNew = topo - slIncrease( iSlIncrease );
+    
+    [iy,ix] = find( topo > slIncrease(iSlIncrease) );
+    for ii = 1 : size( ix, 1 )
+        oceanNew( iy(ii), ix(ii) ) = 0; % set all height above sea-level to zero
+    end
+    
+    % compute the total volume for this increased sea-level
+    oceanNew = oceanNew ./ 1000; % [km] convert to meters
+    oceanNew = oceanNew .* -1; % change direction of positive
+    volNew = oceanNew .* pixelArea; % [km^3]
+    
+    % c) new total is new volume minus old volume
+    dVol( iSlIncrease ) = sum( sum( volNew ) ) - volume_Current;
+end
+% sea-level index that gives closest volume
+[~,slIdx] = min( abs( antarcticaVolume - dVol ) );
+
+% d) show result; estimated rise is 80 m
+h = figure; 
+plot( slIncrease, dVol, 'ko' ); hold on; grid on;
+plot( [0 max(slIncrease)], [antarcticaVolume antarcticaVolume], 'r' );
+xlabel( 'Sea-level rise [m]' );
+ylabel( 'Volume of meltwater added to oceans [km^3]' );
+title( 'Sea-level rise influence on oceans volume' );
+legend('Tested sea-level heights','Volume from Antarctica');
+legend('Location','NorthWest'); legend boxoff;
+
+set(h,'PaperPositionMode','Auto');
+if saveFigs
+    print(h,'./seaLevelModel.png','-dpng');
+end
+
+%%
+
+% setup the figure properties that we want
+h = figure; % your comment
+h.InvertHardcopy = 'off'; % your comment
+h.Color = 'k';  % your comment
+h.Position = [100 100 1000 500]; % your comment
+h.PaperPositionMode = 'auto'; % your comment
+
+% setup the map axes
+ax = axesm('Mollweid', 'Frame', 'on', 'Grid', 'on');
+setm(ax,'MLabelLocation',60);
+setm(ax,'PLabelLocation',30);
+mlabel('MLabelParallel',0); % set the Meridian label at the zero parallel
+plabel('PLabelMeridian',-25); % set the Parallel label at the 15W meridian
+axis('off'); % make sure axis is off REPLACE_WITH_DASH_DASH this removes the non-ellipsoidal background white color
+setm(ax,'FontColor',[0.9 0.9 0.9]); % to change axesm properties you have to use setm, not ax.PropertyName like other handles
+setm(ax,'GColor',[0.9 0.9 0.9]);
+
+% plot the topo data
+pcolorm(lat,lon,topo); % plot the matrix of elevations on the map
+hold on; 
+demcmap(topo); % give it a better colormap (make sure to convert to km to match ocean)
+plotm(coastlat, coastlon,'r');
+contourm( LAT(1:end-1), LON(1:end-1), topo, [slIncrease(slIdx) slIncrease(slIdx)],'g');
+
+% add a colorbar and set properties
+c = colorbar;
+c.Label.String = 'Elevation [m]';
+c.Color = [0.9 0.9 0.9];
+set( findall( h, '-property', 'FontSize' ), 'FontSize', 16 );
+set( findall( h, '-property', 'FontWeight' ), 'FontWeight', 'Bold' );
+
+if saveFigs
+    print(h,'./antarcticaSeaLevelRise.png','-dpng');
+end
+
+%% b) Greenland above sea level
+
+% selected boundary of Greenland by hand
+xx = [ 297.3443, 287.1840, 303.6341, 321.0519, 352.9845]; % note this is now between 0 to 360, not -180 to 180
+yy = [ 177.1051, 166.4609, 157.2682, 139.3666, 175.6536]; % note this is now between 0 to 180, not -90  to 90
+
+% to close polygon by appending beginning to end
+xx = [ xx, xx(1) ]; 
+yy = [ yy, yy(1) ]; 
+
+% determine the points that lie within the boudary
+[X, Y] = meshgrid( 1:360, 1:180);
+in = inpolygon( X, Y, xx, yy ); % true if in polygon, false otherwise
+
+topoGreenland = in .* topo; % get the greenland altitudes
+
+[ixG, iyG] = find( topoGreenland < 0 );
+for ii = 1 : size( ixG, 1 )
+    % set any elevations below sea level to zero
+    topoGreenland( ixG(ii), iyG(ii) ) = 0;
+end
+
+topoGreenland = topoGreenland ./ 1000; % [km] convert altitude to km
+volumeGreenland = topoGreenland .* pixelArea; % [km^3]
+VolG = sum(sum(volumeGreenland)) * 0.9; % [km^3]
+
+% c) total volume is Greenland plus Antarctica
+% meltwater = VolG + VolA;
+
+% setup the figure properties that we want
+h = figure; % your comment
+h.InvertHardcopy = 'off'; % your comment
+h.Color = 'k';  % your comment
+h.Position = [100 100 1000 500]; % your comment
+h.PaperPositionMode = 'auto'; % your comment
+
+% setup the map axes
+ax = axesm('Mollweid', 'Frame', 'on', 'Grid', 'on');
+setm(ax,'MLabelLocation',60);
+setm(ax,'PLabelLocation',30);
+mlabel('MLabelParallel',0); % set the Meridian label at the zero parallel
+plabel('PLabelMeridian',-25); % set the Parallel label at the 15W meridian
+axis('off'); % make sure axis is off REPLACE_WITH_DASH_DASH this removes the non-ellipsoidal background white color
+setm(ax,'FontColor',[0.9 0.9 0.9]); % to change axesm properties you have to use setm, not ax.PropertyName like other handles
+setm(ax,'GColor',[0.9 0.9 0.9]);
+
+% plot the topo data
+pcolorm(lat,lon,topo); % plot the matrix of elevations on the map
+hold on; 
+demcmap(topo); % give it a better colormap (make sure to convert to km to match ocean)
+plotm( yy-90, xx, 'r' ); % plot the boundary
+plotm(Y(in)-90,X(in),'m.'); % plot the points
+
+% add a colorbar and set properties
+c = colorbar;
+c.Label.String = 'Elevation [m]';
+c.Color = [0.9 0.9 0.9];
+set( findall( h, '-property', 'FontSize' ), 'FontSize', 16 );
+set( findall( h, '-property', 'FontWeight' ), 'FontWeight', 'Bold' );
+
+if saveFigs
+    print(h,'./greenlandNodes.png','-dpng');
+end
+
+##### SOURCE END #####
+--></body></html>
