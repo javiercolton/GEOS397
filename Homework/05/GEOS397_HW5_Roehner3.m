@@ -3,9 +3,7 @@
 % Clay Roehner and Javier Colton
 %
 %
-%
 close all
-clear all
 clc
 
 %% Part 1 Conductive heat flow
@@ -13,8 +11,7 @@ clc
 % Imagine an infinitely long and wide solid plate. The plate has thickness d. The temperature at the top of
 % the plate is T1 and the temperature at the bottom of the plate is T2. Draw a diagram of this plate and label
 % these parameters.
-
-figure
+figure (1)
 rectangle('Position',[1 3 8 3]);
 axis ([0 10 0 10]);
 axis off;
@@ -47,7 +44,6 @@ annotation('textbox',dim,'String',str,'FitBoxToText','on');
 % is hotter). 
 %
 %% Step 3: Thermal conductivities
-%
 %
 % Thermal Conductivity Values (in $W/m \bullet C$
 %
@@ -101,8 +97,8 @@ annotation('textbox',dim,'String',str,'FitBoxToText','on');
 % Step 1: Setup the model domain and compute
 %
 %
-depthOcean = linspace(0 , 100, 100);
-timeInt = linspace(0 , 100, 100);
+depthOcean = linspace(0 , 100, 100); % [km]
+timeInt = linspace(0 , 100, 100); %[Ma]
 constantK = 31.56; %km^2/Ma
 morT = 640;
 %
@@ -117,24 +113,36 @@ end
 toc
 %
 
-figure 
+figure (2)
+
 imagesc(timeInt, depthOcean, T); axis ij;
 c=colorbar;
-colormap(jet)
-xlabel('Time [Ma]')
-ylabel ('Ocean depth [km]')
-c.Label.String = ('Temperature^{o}C')
-
-%Using meshgrid
+colormap(jet);
+xlabel('Time [Ma]');
+ylabel ('Ocean depth [km]');
+c.Label.String = ('Temperature^{o}C');
+title('Temperature using two "for" loops');
 tic
-
-[timeGrid, depthGrid] = meshgrid(timeInt, depthOcean); %create two arrays of equal size with their respective values
-meshT = morT * erf(depthGrid./(2*sqrt(constantK*timeGrid))); %using the equation cell by cell to compute T(t,z)
-
+[t1 z1] = meshgrid (timeInt, depthOcean);
+meshT = morT * erf((z1)./(2*(sqrt(constantK*t1))));
 toc
 
-%It takes longer to compute T(z,t) using the loop than it does using
-%meshgrid.
+figure (3)
+
+imagesc(timeInt, depthOcean, meshT)
+c=colorbar;
+colormap;
+xlabel('Time [Ma]');
+ylabel ('Ocean depth [km]');
+c.Label.String = ('Temperature^{o}C');
+title('Temperature using meshgrid');
+
+% EXTRA CREDIT: 
+% For loop elapsed time = 0.012884 seconds
+% meshgrid elapsed time = 0.002297 seconds
+%
+% meshgrid is .0106 seconds faster than the for loop
+
 %% Step 2: Analyze the model output
 % Does your model make sense given the boundary conditions used to derive the solution?
 % \bullet Yes the model makes sense given the boundary condition supplied.
@@ -155,8 +163,8 @@ toc
 % distance.
 % What would be a more appropriate boundary condition at T(z = 0) given what we know about the
 % oceans?
-% ???????????\bullet A more appropriate boundary condition T(z=0) would be a pixel by
-% pixel elevation for what z actually is over space???????
+% \bullet A more appropriate boundary condition T(z=0) would be a pixel by
+% pixel elevation for what z actually is over space
 % Is 640?C an appropriate value for the temperature at a mid-ocean ridge? Why or why not?
 % \bullet 640^{o}C might be an appropriate temperature for certin spots along the
 % mid-ocean ridge however this value can vary by up to 250^{o}C. Using one
@@ -171,20 +179,21 @@ load('spreadingData.mat');
 
 fields(Bath)
 
-subplot (2,1,1);
+
+subplot (2,1,1); 
 
 plot (Bath.atlanticx,Bath.atlanticz);
-ylabel ('Depth (m)')
+ylabel ('Depth (m)');
 
-title ('Atlantic Ocean')
-grid on
-hold on
+title ('Atlantic Ocean');
+grid on;
+hold on;
 subplot (2,1,2);
 plot (Bath.pacificx,Bath.pacificz);
-xlabel ('Distance from MOR (km)')
-ylabel('Depth [m]')
-title ('Pacific Ocean')
-grid on
+xlabel ('Distance from MOR (km)');
+ylabel('Depth [m]');
+title ('Pacific Ocean');
+grid on;
 
 %% Step 2: A half-space model
 
@@ -196,9 +205,8 @@ for ix =  1 : length(Bath.pacificx); % Run a loop to populate depthPredictPac us
 end
 
 depthPredictAtl = zeros(length(Bath.atlanticx),1); % Create an empty vector for predicted Pacific depths
-VelocityAtl = 20
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Fix Atlantic%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+VelocityAtl = 20;
+
 
 for ix =  1 : length(Bath.atlanticx); % Run a loop to populate depthPredictAtl using the depth half-space model
        depthPredictAtl(ix) = -(3.12 + .345 *(Bath.atlanticx(ix)/VelocityAtl)^(1/2)); % run Bath.atlanticx through the loop
@@ -210,28 +218,29 @@ figure(3)
 subplot (2,1,1);
 
 plot (Bath.atlanticx,Bath.atlanticz,'b');
-ylabel ('Depth (m)')
+ylabel ('Depth (m)');
 
-title ('Atlantic Ocean')
-grid on
-hold on
-plot(Bath.atlanticx,(depthPredictAtl*1000), 'r')
-legend on
-legend('Actual','Predicted' ,'Location','Best')
+title ('Atlantic Ocean');
+grid on;
+hold on;
+plot(Bath.atlanticx,(depthPredictAtl*1000), 'r');
 
 subplot (2,1,2);
 plot (Bath.pacificx,Bath.pacificz,'b');
-hold on
-xlabel ('Distance from MOR (km)')
-ylabel ('Depth (m)')
-title ('Pacific Ocean')
-grid on
-plot(Bath.pacificx,(depthPredictPac*1000), 'r')
+hold on;
+xlabel ('Distance from MOR (km)');
+ylabel ('Depth (m)');
+title ('Pacific Ocean');
+grid on;
+plot(Bath.pacificx,(depthPredictPac*1000), 'r');
 
+legend on;
+legend('Actual','Predicted' ,'Location','Best');
 
 % What does 2.65 represent in the equation above?
-% 2.65 representes the depth of the MOR in km's. I adjusted the value to
+% 2.65 representes the deoth of the MOR in km's. I adjusted the value to
 % better fit the actual depths in the Atlantic Ocean.
+%
 % What are the velocity rates that best fit each ocean?
 %
 % Pacific Ocean = 45 km/Ma
@@ -253,20 +262,19 @@ velAtl = VelocityAtl*1000/1000000; % = 0.02 cm/yr
 %
 % Step 1: Load topo data and plot seafloor depths
  
-load('topo.mat')
+load('topo.mat');
 
-load('coastlines')
+load('coastlines');
 
 [platelat, platelon] = importPlates('All_boundaries.txt');
-
 %% Step 2: Kill the topography and convert to km
 topo (topo>0) = 0;  % kill the topography
 topo = topo/1000;   % convert depth to km
-%topo = convlength (topo, 'm', 'km')
+
 
 
 g = figure;
-hold on
+hold on;
 g.InvertHardcopy = 'off'; %Figure background color set to black when printing
 g.Color = 'k';  %Set figure window background color to black
 g.Position = [100 100 1000 500]; %The location and size of figure's drawable area set to this extent
@@ -296,10 +304,11 @@ plotm(platelat,platelon)
 
 %
 c = colorbar; 
-colormap(flipud(jet(20))); % colorbar with jet scale. flipund flips the color bar colors so that the red is closer to zero
+colormap((jet(20))); % colorbar with jet scale.
+c.Color = [1 1 1]; % colorbar text white
 
 c.Label.String = ('Ocean depth [km]'); %colormap title
-c.Color = [1 1 1]; % colorbar text white
+
 %% Step 3: Compute seafloor age
 %
 % $d = 2.65 + 0.345t^{1/2}$ Solve for t
@@ -353,10 +362,10 @@ plotm(platelat,platelon,'b')
 
 
 
-cmap = flipud( jet(20) ); % create a fliiped jet colormap 
+cmap = flipud( jet(20) ); % create a flipped jet colormap 
 cmap = [0.5 0.5 0.5 ; cmap]; % 
 cmap(end,:) = []; % (1 pt.) your comment here
-colormap(cmap); % creates color map with the parameters described above
+colormap(cmap); % (1 pt.) your comment here
 cmap = colorbar; 
 
 cmap.Color = ([1 1 1]);
@@ -365,10 +374,25 @@ cmap.Label.String = ('Age [Ma]');
 %% Step 5: Discussion
 
 % • Does your map of ocean ages make sense given the plate boundaries?
+%Yes. In general the sea floor is the youngest along spreading boundaries
+%with a gradually increasing age away from the boundaries.
+
 % • What is the oldest age in your map?
-% • Where does this oldest age occur and does this make sense geologically?
+%The oldest age on our map is 195.4Ma.
+%
+%• Where does this oldest age occur and does this make sense geologically?
+%This age occurs in the northeast Pacific. There are also some very old
+%sections in the northeast Atlantic. These areas are the farthest from
+%MOD's and given the relationship between time and distance this makes
+%sense.
+%
 % • Where do the youngest ages occur? Does this conform to your knowledge of oceanic lithosphere
 % generation?
+%The youngest ages occur right along the midoocean ridge whihc makes sense
+%because that is where new oceanic lithosphere is being created.
+%
 % • Are there any assumptions that have gone into this model that might not be accurate?
+%We assumed that the teperature at the spreading centers is 640 degrees C
+%and that there are even spreading rates everywhere. 
 
 
